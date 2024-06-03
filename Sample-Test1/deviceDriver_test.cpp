@@ -102,5 +102,10 @@ TEST_F(DeviceDriverFixture, ApplicationWrite) {
 		.Times(5)
 		.WillRepeatedly(Return(0xFF));
 
+	EXPECT_CALL(mock, write(0x0, 0x60));
+	EXPECT_CALL(mock, write(0x1, 0x60));
+	EXPECT_CALL(mock, write(0x2, 0x60));
+	EXPECT_CALL(mock, write(0x3, 0x60));
+	EXPECT_CALL(mock, write(0x4, 0x60));
 	app->WriteAll(0x60);
 }
