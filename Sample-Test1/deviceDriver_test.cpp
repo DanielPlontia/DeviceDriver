@@ -10,21 +10,22 @@ public:
 	MOCK_METHOD(void, write, (long address, unsigned char data), (override));
 };
 
-TEST(DeviceDriverFixture, Read5times) {
+class DeviceDriverFixture : public Test {
+public:
 	DDMock mock;
-	DeviceDriver hw(&mock);
+	DeviceDriver* hw = new DeviceDriver(&mock);
+};
+
+TEST_F(DeviceDriverFixture, Read5times) {
 	EXPECT_CALL(mock, read)
 		.Times(5)
 		.WillRepeatedly(Return('A'));
 
-	int ret = hw.read(0);
-	cout << ret;
+	int ret = hw->read(0);
+	cout << ret << endl;
 }
 
-TEST(DeviceDriverFixture, NotSameReadResult) {
-	DDMock mock;
-	DeviceDriver hw(&mock);
-
+TEST_F(DeviceDriverFixture, NotSameReadResult) {
 	EXPECT_CALL(mock, read(0))
 		.Times(5)
 		.WillOnce(Return('A'))
@@ -33,29 +34,23 @@ TEST(DeviceDriverFixture, NotSameReadResult) {
 		.WillOnce(Return('A'))
 		.WillOnce(Return('F'));
 
-	EXPECT_THROW(hw.read(0), ReadFailException);
+	EXPECT_THROW(hw->read(0), ReadFailException);
 }
 
-TEST(DeviceDriverFixture, NormalWrite) {
-	DDMock mock;
-	DeviceDriver hw(&mock);
-
+TEST_F(DeviceDriverFixture, NormalWrite) {
 	EXPECT_CALL(mock, read(0))
 		.Times(5)
 		.WillRepeatedly(Return(0xFF));
 	EXPECT_CALL(mock, write(0, 'B'))
 		.Times(1);
 
-	hw.write(0, 'B');
+	hw->write(0, 'B');
 }
 
-TEST(DeviceDriverFixture, AlreadyWrite) {
-	DDMock mock;
-	DeviceDriver hw(&mock);
-
+TEST_F(DeviceDriverFixture, AlreadyWrite) {
 	EXPECT_CALL(mock, read(0))
 		.Times(5)
 		.WillRepeatedly(Return(0x49));
 
-	EXPECT_THROW(hw.write(0, 'B'), WriteFailException);
+	EXPECT_THROW(hw->write(0, 'B'), WriteFailException);
 }
