@@ -1,5 +1,4 @@
 #include "DeviceDriver.h"
-#include <vector>
 #include <stdexcept>
 using namespace std;
 
