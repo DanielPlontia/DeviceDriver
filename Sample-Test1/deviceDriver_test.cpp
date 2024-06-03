@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "../DeviceDriver/DeviceDriver.cpp"
@@ -19,26 +20,23 @@ public:
 
 TEST_F(DeviceDriverFixture, Read5times) {
 	EXPECT_CALL(mock, read)
-		.Times(5);
+		.Times(5)
+		.WillRepeatedly(Return('A'));
 
 	int ret = dd->read(0);
-	cout << ret;
+	cout << ret << endl;
 }
 
 TEST_F(DeviceDriverFixture, NotSameReadResult) {
 	EXPECT_CALL(mock, read(0))
+		.Times(5)
 		.WillOnce(Return('A'))
 		.WillOnce(Return('A'))
 		.WillOnce(Return('A'))
-		.WillOnce(Return('F'))
-		.WillRepeatedly(Return('A'));
-	try {
-		int result = dd->read(0);
-		FAIL();
-	}
-	catch (exception e) {
-		// PASS
-	}
+		.WillOnce(Return('A'))
+		.WillOnce(Return('F'));
+
+	EXPECT_THROW(dd->read(0), ReadFailException);
 }
 
 TEST_F(DeviceDriverFixture, NormalWrite) {
@@ -56,13 +54,7 @@ TEST_F(DeviceDriverFixture, AlreadyWrite) {
 		.WillRepeatedly(Return(0x49));
 	EXPECT_CALL(mock, write(0, 'B'))
 		.Times(0);
-	try {
-		dd->write(0, 'B');
-		FAIL();
-	}
-	catch (exception e) {
-		// PASS`
-	}
+	EXPECT_THROW(dd->write(0, 'B'), WriteFailException);
 }
 
 TEST_F(DeviceDriverFixture, ApplicationRead) {
